@@ -3,7 +3,9 @@ from . import forms,models
 from django.db.models import Sum
 from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from datetime import date, timedelta
 from django.db.models import Q
@@ -38,8 +40,25 @@ def customer_signup_view(request):
         return HttpResponseRedirect('customerlogin')
     return render(request,'customer/customersignup.html',context=mydict)
 
+
 def is_customer(user):
     return user.groups.filter(name='CUSTOMER').exists()
+
+
+def customer_login_view(request):
+    """Authenticate only users who belong to the CUSTOMER group."""
+    form = AuthenticationForm(request, data=request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        user = form.get_user()
+        if is_customer(user):
+            login(request, user)
+            return redirect('customer-dashboard')
+
+        form.add_error(None, 'Only customer accounts can log in here.')
+
+    return render(request, 'insurance/adminlogin.html', {'form': form})
+
 
 @login_required(login_url='customerlogin')
 def customer_dashboard_view(request):
