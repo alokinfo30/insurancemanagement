@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
+from django.views.generic import RedirectView
 from insurance import views
 from django.contrib.auth.views import LogoutView, LoginView
 
@@ -9,6 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('customer/', include('customer.urls')),
     path('', views.home_view, name='home'),
+    path('favicon.ico', RedirectView.as_view(url='/static/image/admin.png', permanent=False)),
     path('logout', LogoutView.as_view(template_name='insurance/logout.html'), name='logout'),
     path('aboutus', views.aboutus_view, name='aboutus'),
     path('contactus', views.contactus_view, name='contactus'),
