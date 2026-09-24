@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 {% load widget_tweaks %}
 <html lang="en" dir="ltr">
   <head>
@@ -11,7 +12,8 @@
 
 body {
   font-family: 'open sans', helvetica, arial, sans;
-background:url(http://farm8.staticflickr.com/7064/6858179818_5d652f531c_h.jpg) no-repeat center center fixed; 
+  background: url('{% static "image/homepage.jpg" %}') no-repeat center center fixed;
+/* background:url(http://farm8.staticflickr.com/7064/6858179818_5d652f531c_h.jpg) no-repeat center center fixed;  */
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
