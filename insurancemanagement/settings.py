@@ -1,9 +1,16 @@
 """Django settings for insurancemanagement."""
 import os
-
+import dj_database_url
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}",
+        conn_max_age=600,
+    )
+}
 
 SECRET_KEY = 'ls@!_(edqp*xy76kvbsbsst$07at(v^li*2&ew!^$8o$'
 DEBUG = False
