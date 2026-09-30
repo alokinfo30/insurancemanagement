@@ -1,0 +1,58 @@
+<%- include('../partials/admin_header') %>
+
+<head>
+  <style media="screen">
+    input[type=text], select, input[type=number], input[type=password], textarea {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    input[type=submit] {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    input[type=submit]:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<br><br>
+<h3 style="text-align:center;">UPDATE POLICY</h3>
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+  <form method="post" action="/update-policy/<%= policy.id %>" autocomplete="off">
+    <label for="category_id">Category</label>
+    <select name="category_id" class="form-control" required>
+      <% categories.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= c.id === policy.category_id ? 'selected' : '' %>><%= c.category_name %></option>
+      <% }); %>
+    </select>
+
+    <label for="policy_name">Policy Name</label>
+    <input type="text" name="policy_name" class="form-control" value="<%= policy.policy_name %>" required>
+
+    <label for="sum_assurance">Sum Assurance</label>
+    <input type="number" name="sum_assurance" class="form-control" value="<%= policy.sum_assurance %>" required>
+
+    <label for="premium">Premium</label>
+    <input type="number" name="premium" class="form-control" value="<%= policy.premium %>" required>
+
+    <label for="tenure">Tenure (Years)</label>
+    <input type="number" name="tenure" class="form-control" value="<%= policy.tenure %>" required>
+
+    <br><br>
+    <input type="submit" value="Update">
+  </form>
+</div>
+
+<%- include('../partials/admin_footer') %>

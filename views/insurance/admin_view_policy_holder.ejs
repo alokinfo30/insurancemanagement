@@ -1,0 +1,66 @@
+<%- include('../partials/admin_header') %>
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <style media="screen">
+    a:link {
+      text-decoration: none;
+    }
+    h6 {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<div class="container">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h6 class="panel-title">Policy Holder Record</h6>
+    </div>
+    <table class="table table-hover" id="dev-table">
+      <thead>
+        <tr>
+          <th>Serial No.</th>
+          <th>Policy Name</th>
+          <th>Customer Name</th>
+          <th>Applied Date</th>
+          <th>Status</th>
+          <th class="text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (policyrecords && policyrecords.length > 0) { %>
+          <% policyrecords.forEach(function(t, index) { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><%= t.Policy %></td>
+              <td><%= t.customer %></td>
+              <td><%= t.creation_date %></td>
+              <td>
+                <span class="label <%= t.status === 'Approved' ? 'label-success' : (t.status === 'Disapproved' ? 'label-danger' : 'label-warning') %>" style="font-size: 14px;">
+                  <%= t.status %>
+                </span>
+              </td>
+              <td class="text-right">
+                <% if (t.status === 'Pending') { %>
+                  <a class="btn btn-primary btn-sm" href="/approve-request/<%= t.id %>">Approve</a>
+                  <a class="btn btn-danger btn-sm" href="/reject-request/<%= t.id %>">Reject</a>
+                <% } else { %>
+                  <span style="font-size:14px; font-weight:bold; color: <%= t.status === 'Approved' ? '#28a745' : '#dc3545' %>;">
+                    <%= t.status %>
+                  </span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="6" class="text-center">No policy holder records found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/admin_footer') %>

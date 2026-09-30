@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Contact Us - Insurance Management System</title>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <br><br><br>
+
+  <center>
+    <h3 class='alert alert-success'>Send Us Your Valuable Feedback !</h3>
+
+    <form method="POST" action="/contactus" autocomplete="off" style="max-width: 600px; padding: 20px;">
+      <div class="form-group text-left">
+        <label for="name"><strong>Name:</strong></label>
+        <input type="text" id="name" name="Name" class="form-control" placeholder="Your Name" required>
+        <br>
+        <label for="email"><strong>Email:</strong></label>
+        <input type="email" id="email" name="Email" class="form-control" placeholder="Your Email" required>
+        <br>
+        <label for="message"><strong>Message:</strong></label>
+        <textarea id="message" name="Message" class="form-control" rows="4" placeholder="Your feedback or inquiry..." required></textarea>
+        <br>
+        <div class="text-center">
+          <input type="submit" value="Send Message" class='btn btn-primary btn-lg'>
+        </div>
+      </div>
+    </form>
+  </center>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

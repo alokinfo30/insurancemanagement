@@ -1,0 +1,53 @@
+<%- include('../partials/customer_header') %>
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <style media="screen">
+    a:link {
+      text-decoration: none;
+    }
+    h6 {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<div class="container">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h6 class="panel-title">History</h6>
+    </div>
+    <table class="table table-hover" id="dev-table">
+      <thead>
+        <tr>
+          <th>Serial No.</th>
+          <th>Policy Name</th>
+          <th>Applied Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (policies && policies.length > 0) { %>
+          <% policies.forEach(function(t, index) { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><%= t.Policy %></td>
+              <td><%= t.creation_date %></td>
+              <td>
+                <span class="label <%= t.status === 'Approved' ? 'label-success' : (t.status === 'Disapproved' ? 'label-danger' : 'label-warning') %>" style="font-size: 14px;">
+                  <%= t.status %>
+                </span>
+              </td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="4" class="text-center">No applied policy history found. <a href="/customer/apply-policy">Apply for a policy here</a>.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/customer_footer') %>

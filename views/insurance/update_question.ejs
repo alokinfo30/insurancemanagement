@@ -1,0 +1,55 @@
+<%- include('../partials/admin_header') %>
+
+<head>
+  <style media="screen">
+    input[type=text], textarea {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    input[type=submit] {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    input[type=submit]:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<br><br>
+<h3 style="text-align:center;">Update Question</h3>
+<div style="max-width: 650px; margin: 0 auto; padding: 20px;">
+  <form method="post" action="/update-question/<%= question.id %>" autocomplete="off">
+    <div class="form-group">
+      <label>Customer Name</label>
+      <input type="text" class="form-control" value="<%= question.customer_name %>" readonly disabled>
+    </div>
+
+    <div class="form-group">
+      <label>Question / Problem</label>
+      <textarea class="form-control" rows="3" readonly disabled><%= question.description %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="admin_comment">Your Comment / Reply</label>
+      <input type="text" name="admin_comment" id="admin_comment" class="form-control" value="<%= question.admin_comment !== 'Nothing' ? question.admin_comment : '' %>" placeholder="Type resolution or answer here..." required>
+    </div>
+
+    <br>
+    <input type="submit" value="Update">
+    <a href="/admin-question" class="btn btn-default btn-block" style="margin-top: 10px; width: 100%;">Back</a>
+  </form>
+</div>
+
+<%- include('../partials/admin_footer') %>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Customer Login - Insurance Management System</title>
+  <style media="screen">
+    @import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:400,300,600);
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Open Sans', helvetica, arial, sans-serif;
+      background: url('/static/image/homepage.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .log-form {
+      width: 40%;
+      min-width: 320px;
+      max-width: 475px;
+      background: #fff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0px 2px 5px rgba(0,0,0,.25);
+    }
+
+    @media (max-width: 40em) {
+      .log-form {
+        width: 95%;
+        position: relative;
+        margin: 2.5% auto 0 auto;
+        left: 0%;
+        transform: translate(0%, 0%);
+      }
+    }
+
+    .log-form form {
+      display: block;
+      width: 100%;
+      padding: 2em;
+    }
+
+    .log-form h2 {
+      width: 100%;
+      color: #777;
+      font-family: 'Open Sans Condensed', sans-serif;
+      font-size: 1.35em;
+      display: block;
+      background: #2a2a2a;
+      text-transform: uppercase;
+      padding: .75em 1em;
+      margin: 0;
+      font-weight: 200;
+      color: #fff;
+    }
+
+    .log-form input.form-control {
+      display: block;
+      width: 100%;
+      margin-bottom: 1.5em;
+      padding: .5em 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      color: #333;
+    }
+
+    .log-form .btn-login {
+      display: inline-block;
+      background: #007bff;
+      border: 1px solid #0056b3;
+      padding: .5em 2em;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      width: 100%;
+    }
+
+    .log-form .btn-login:hover {
+      background: #0056b3;
+    }
+
+    .alert-danger {
+      color: #721c24;
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      padding: .75rem 1.25rem;
+      margin-bottom: 1rem;
+      border: 1px solid transparent;
+      border-radius: .25rem;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="log-form">
+    <h2 class="text-center">CUSTOMER LOGIN</h2>
+    <form method="post" action="/customer/customerlogin">
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" class="form-control" placeholder="customer" required value="customer">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" class="form-control" placeholder="customer" required value="customer">
+      </div>
+      <button type="submit" class="btn-login">Login as Customer</button>
+      <div class="text-center mt-3" style="margin-top: 15px;">
+        <small>Don't have an account? <a href="/customer/customersignup">Sign Up here</a></small>
+      </div>
+    </form>
+  </div>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<%- include('../partials/customer_header') %>
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+
+<h2 style="text-align:center; color:blue;">ASK QUESTION</h2>
+<form method="POST" action="/customer/ask-question" autocomplete="off" style="max-width: 650px; margin: 20px auto;">
+  <div class="form-group">
+    <label for="description">Problem / Inquiry</label>
+    <textarea name="description" class="form-control" rows="4" placeholder="Describe your problem or question here..." required></textarea>
+  </div>
+  <br>
+  <button type="submit" class="btn btn-primary">ASK</button>
+  <a href="/customer/customer-dashboard" class="btn btn-default">Back</a>
+</form>
+
+<%- include('../partials/customer_footer') %>

@@ -1,0 +1,18 @@
+<%- include('../partials/admin_header') %>
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+
+<h2 style="text-align:center; color:blue;">ADD CATEGORY</h2>
+<form method="POST" action="/admin-add-category" autocomplete="off" style="max-width: 600px; margin: 20px auto;">
+  <div class="form-group">
+    <label for="category_name">Category Name</label>
+    <input type="text" name="category_name" class="form-control" placeholder="Life Insurance" required>
+  </div>
+  <br>
+  <button type="submit" class="btn btn-primary">ADD</button>
+  <a href="/admin-category" class="btn btn-default">Back</a>
+</form>
+
+<%- include('../partials/admin_footer') %>

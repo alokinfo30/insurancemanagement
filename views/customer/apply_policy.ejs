@@ -1,0 +1,57 @@
+<%- include('../partials/customer_header') %>
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <style media="screen">
+    a:link {
+      text-decoration: none;
+    }
+    h6 {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<div class="container">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h6 class="panel-title">Available Policies</h6>
+    </div>
+    <table class="table table-hover" id="dev-table">
+      <thead>
+        <tr>
+          <th>Serial No.</th>
+          <th>Policy Name</th>
+          <th>Category</th>
+          <th>Sum Assurance</th>
+          <th>Premium</th>
+          <th>Tenure</th>
+          <th>Creation Date</th>
+          <th>Apply</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (policies && policies.length > 0) { %>
+          <% policies.forEach(function(t, index) { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><%= t.policy_name %></td>
+              <td><%= t.category_name %></td>
+              <td>$<%= t.sum_assurance.toLocaleString() %></td>
+              <td>$<%= t.premium.toLocaleString() %></td>
+              <td><%= t.tenure %> yrs</td>
+              <td><%= t.creation_date %></td>
+              <td><a class="btn btn-danger btn-xs" href="/customer/apply/<%= t.id %>">Apply</a></td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="8" class="text-center">No available policies found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/customer_footer') %>

@@ -1,0 +1,57 @@
+<%- include('../partials/admin_header') %>
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <style media="screen">
+    a:link {
+      text-decoration: none;
+    }
+    h6 {
+      text-align: center;
+    }
+    .panel-heading {
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<div class="container">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h6 class="panel-title">Customers</h6>
+    </div>
+    <table class="table table-hover" id="dev-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Profile Picture</th>
+          <th>Mobile</th>
+          <th>Address</th>
+          <th>Update</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (customers && customers.length > 0) { %>
+          <% customers.forEach(function(t) { %>
+            <tr>
+              <td><%= t.first_name %> <%= t.last_name %></td>
+              <td><img src="<%= t.profile_pic || '/static/image/admin.png' %>" alt="Profile Pic" height="40px" width="40px" style="border-radius: 50%; object-fit: cover;" /></td>
+              <td><%= t.mobile %></td>
+              <td><%= t.address %></td>
+              <td><a class="btn btn-primary btn-xs" href="/update-customer/<%= t.id %>"><span class="glyphicon glyphicon-edit"></span> Edit</a></td>
+              <td><a class="btn btn-danger btn-xs" href="/delete-customer/<%= t.id %>" onclick="return confirm('Are you sure you want to delete this customer?');"><span class="glyphicon glyphicon-trash"></span> Delete</a></td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="6" class="text-center">No customers found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/admin_footer') %>

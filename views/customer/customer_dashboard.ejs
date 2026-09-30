@@ -1,0 +1,55 @@
+<%- include('../partials/customer_header') %>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<style>
+  a:link { text-decoration: none; }
+  .order-card { color: rgb(255, 255, 255); }
+  .bg-c-green { background: #4C51BF; }
+  .card { box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16); border: 1px solid black; margin-bottom: 30px; transition: all 0.3s ease-in-out; }
+  .card .card-block { padding: 25px; }
+  .order-card i { font-size: 26px; }
+  .f-left { float: left; }
+  .f-right { float: right; }
+</style>
+<div class="container">
+  <div class="row">
+    <div class="col-md-4 col-xl-3">
+      <div class="card bg-c-green order-card">
+        <div class="card-block">
+          <h6><a href="/customer/apply-policy" style="color:white">Available Policy</a></h6>
+          <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span><%= available_policy %></span></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-xl-3">
+      <div class="card bg-c-green order-card">
+        <div class="card-block">
+          <h6><a href="/customer/history" style="color:white">Applied Policy</a></h6>
+          <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span><%= applied_policy %></span></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-xl-3">
+      <div class="card bg-c-green order-card">
+        <div class="card-block">
+          <h6><a href="/customer/apply-policy" style="color:white">Policy Categories</a></h6>
+          <h2 class="text-right"><i class="fas fa-list-alt f-left"></i><span><%= total_category %></span></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-xl-3">
+      <div class="card bg-c-green order-card">
+        <div class="card-block">
+          <h6><a href="/customer/question-history" style="color:white">Total Question Asked</a></h6>
+          <h2 class="text-right"><i class="fas fa-question-circle f-left"></i><span><%= total_question %></span></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/customer_footer') %>

@@ -1,0 +1,7 @@
+{
+  "name": "Insurance Management System",
+  "description": "Insurance Management System with Admin and Customer portals for policy management, applications, and customer support inquiries.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
