@@ -253,6 +253,7 @@ export async function deletePolicy(id) {
 
 // -----------------------------------------------------------------------------
 // Persistent Users / Customers Operations
+// Customers persist indefinitely in Firestore (no TTL)
 // -----------------------------------------------------------------------------
 export async function getCustomers() {
   try {
@@ -287,22 +288,36 @@ export async function saveUser(userData) {
     mobile: userData.mobile || '',
     address: userData.address || '',
     profile_pic: userData.profile_pic || '/static/profile_pic/Customer/lazy.PNG',
-    createdAt: userData.createdAt || new Date().toISOString()
+    createdAt: userData.createdAt || new Date().toISOString(),
+    // IMPORTANT: Do NOT include TTL field. Customer records persist indefinitely.
+    // If you need TTL in future, use Firestore TTL Policy from Firebase Console, not document field.
   };
-  await setDoc(doc(db, 'users', uid), profile, { merge: true });
-  return profile;
+  
+  console.log(`[DEBUG] Saving customer with UID: ${uid}, Email: ${profile.email}`);
+  
+  try {
+    await setDoc(doc(db, 'users', uid), profile, { merge: true });
+    console.log(`[DEBUG] Customer saved successfully: ${uid}`);
+    return profile;
+  } catch (error) {
+    console.error(`[ERROR] Failed to save customer ${uid}:`, error.message);
+    throw error;
+  }
 }
 
 export async function updateUser(uid, updateFields) {
+  console.log(`[DEBUG] Updating customer ${uid} with fields:`, Object.keys(updateFields));
   await updateDoc(doc(db, 'users', uid), updateFields);
 }
 
 export async function deleteUser(uid) {
+  console.log(`[DEBUG] Deleting customer ${uid}`);
   await deleteDoc(doc(db, 'users', uid));
 }
 
 // -----------------------------------------------------------------------------
 // Persistent Policy Records (Applications)
+// Policy records persist indefinitely in Firestore
 // -----------------------------------------------------------------------------
 export async function getPolicyRecords(statusFilter = null) {
   try {
@@ -361,6 +376,7 @@ export async function updateRecordStatus(id, newStatus) {
 
 // -----------------------------------------------------------------------------
 // Persistent Questions Operations
+// Questions persist indefinitely in Firestore
 // -----------------------------------------------------------------------------
 export async function getQuestions(customerId = null) {
   try {
