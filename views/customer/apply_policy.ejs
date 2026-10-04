@@ -2,56 +2,123 @@
 
 <head>
   <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style media="screen">
     a:link {
       text-decoration: none;
     }
-    h6 {
-      text-align: center;
+    .view-toggle-btn {
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #cbd5e1;
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .view-toggle-btn.active {
+      background: #04868f;
+      color: white;
+      border-color: #04868f;
+    }
+    .page-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
     }
   </style>
 </head>
 
-<div class="container">
-  <div class="panel panel-primary">
-    <div class="panel-heading">
-      <h6 class="panel-title">Available Policies</h6>
+<div class="container" style="max-width: 1200px;">
+  <div class="page-header-bar">
+    <div>
+      <h3 style="margin: 0; font-weight: 700; color: #1e293b;">
+        <i class="fa fa-shield" style="color: #04868f;"></i> Explore & Apply for Insurance Plans
+      </h3>
+      <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">
+        Select from our certified insurance policies. Choose a plan and click Apply Now.
+      </p>
     </div>
-    <table class="table table-hover" id="dev-table">
-      <thead>
-        <tr>
-          <th>Serial No.</th>
-          <th>Policy Name</th>
-          <th>Category</th>
-          <th>Sum Assurance</th>
-          <th>Premium</th>
-          <th>Tenure</th>
-          <th>Creation Date</th>
-          <th>Apply</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (policies && policies.length > 0) { %>
-          <% policies.forEach(function(t, index) { %>
-            <tr>
-              <td><%= index + 1 %></td>
-              <td><%= t.policy_name %></td>
-              <td><%= t.category_name %></td>
-              <td>$<%= t.sum_assurance.toLocaleString() %></td>
-              <td>$<%= t.premium.toLocaleString() %></td>
-              <td><%= t.tenure %> yrs</td>
-              <td><%= t.creation_date %></td>
-              <td><a class="btn btn-danger btn-xs" href="/customer/apply/<%= t.id %>">Apply</a></td>
-            </tr>
-          <% }); %>
-        <% } else { %>
+
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button type="button" class="view-toggle-btn active" id="btnCustShowCards">
+        <i class="fa fa-th-large"></i> Card Grid
+      </button>
+      <button type="button" class="view-toggle-btn" id="btnCustShowTable">
+        <i class="fa fa-list"></i> Table View
+      </button>
+    </div>
+  </div>
+
+  <!-- Card Grid View Section -->
+  <div id="custCardViewSection">
+    <%- include('../components/policy_cards_dashboard', { policies: policies, isAdmin: false, isCustomer: true }) %>
+  </div>
+
+  <!-- Table View Section -->
+  <div id="custTableViewSection" style="display: none; margin-top: 20px;">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h6 class="panel-title" style="text-align: center; font-size: 16px; font-weight: 700;">Available Policies Table</h6>
+      </div>
+      <table class="table table-hover" id="dev-table">
+        <thead>
           <tr>
-            <td colspan="8" class="text-center">No available policies found.</td>
+            <th>Serial No.</th>
+            <th>Policy Name</th>
+            <th>Category</th>
+            <th>Sum Assurance</th>
+            <th>Premium</th>
+            <th>Tenure</th>
+            <th>Apply</th>
           </tr>
-        <% } %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (policies && policies.length > 0) { %>
+            <% policies.forEach(function(t, index) { %>
+              <tr>
+                <td><%= index + 1 %></td>
+                <td><strong><%= t.policy_name %></strong></td>
+                <td><span class="label label-info"><%= t.category_name %></span></td>
+                <td>$<%= Number(t.sum_assurance).toLocaleString() %></td>
+                <td>$<%= Number(t.premium).toLocaleString() %>/yr</td>
+                <td><%= t.tenure %> yrs</td>
+                <td>
+                  <a class="btn btn-success btn-xs" href="/customer/apply/<%= t.id %>">
+                    <i class="fa fa-check"></i> Apply
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center">No available policies found.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
+<script>
+  document.getElementById('btnCustShowCards').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('btnCustShowTable').classList.remove('active');
+    document.getElementById('custCardViewSection').style.display = 'block';
+    document.getElementById('custTableViewSection').style.display = 'none';
+  });
+
+  document.getElementById('btnCustShowTable').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('btnCustShowCards').classList.remove('active');
+    document.getElementById('custCardViewSection').style.display = 'none';
+    document.getElementById('custTableViewSection').style.display = 'block';
+  });
+</script>
 
 <%- include('../partials/customer_footer') %>

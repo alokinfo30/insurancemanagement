@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access for Admin or Customer",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["ADMIN", "CUSTOMER"] },
+        "first_name": { "type": "string", "maxLength": 64 },
+        "last_name": { "type": "string", "maxLength": 64 },
+        "mobile": { "type": "string", "maxLength": 20 },
+        "address": { "type": "string", "maxLength": 256 },
+        "profile_pic": { "type": "string", "maxLength": 512 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Document marking a verified user as having Administrator privileges",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "addedAt": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Insurance plan category",
+      "type": "object",
+      "properties": {
+        "category_name": { "type": "string", "maxLength": 100 },
+        "creation_date": { "type": "string", "maxLength": 30 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["category_name"]
+    },
+    "Policy": {
+      "title": "Policy",
+      "description": "Insurance plan specification",
+      "type": "object",
+      "properties": {
+        "policy_name": { "type": "string", "maxLength": 120 },
+        "category_id": { "type": "string", "maxLength": 64 },
+        "category_name": { "type": "string", "maxLength": 100 },
+        "sum_assurance": { "type": "number" },
+        "premium": { "type": "number" },
+        "tenure": { "type": "number" },
+        "creation_date": { "type": "string", "maxLength": 30 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["policy_name", "category_id", "sum_assurance", "premium", "tenure"]
+    },
+    "PolicyRecord": {
+      "title": "PolicyRecord",
+      "description": "Applied policy application by a customer",
+      "type": "object",
+      "properties": {
+        "customer_id": { "type": "string", "maxLength": 128 },
+        "customer_name": { "type": "string", "maxLength": 128 },
+        "customer_email": { "type": "string", "format": "email", "maxLength": 128 },
+        "policy_id": { "type": "string", "maxLength": 64 },
+        "policy_name": { "type": "string", "maxLength": 120 },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Disapproved"] },
+        "creation_date": { "type": "string", "maxLength": 30 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["customer_id", "policy_id", "status"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Customer inquiry or support question",
+      "type": "object",
+      "properties": {
+        "customer_id": { "type": "string", "maxLength": 128 },
+        "customer_name": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "admin_comment": { "type": "string", "maxLength": 2000 },
+        "asked_date": { "type": "string", "maxLength": 30 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["customer_id", "description"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Registered user accounts and profiles"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Verified system administrators directory"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Available insurance policy categories"
+    },
+    "/policies/{policyId}": {
+      "schema": { "$ref": "#/entities/Policy" },
+      "description": "Insurance policy plans"
+    },
+    "/policy_records/{recordId}": {
+      "schema": { "$ref": "#/entities/PolicyRecord" },
+      "description": "Customer policy applications"
+    },
+    "/questions/{questionId}": {
+      "schema": { "$ref": "#/entities/Question" },
+      "description": "Customer support questions and admin responses"
+    }
+  }
+}

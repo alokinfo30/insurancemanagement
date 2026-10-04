@@ -1,0 +1,354 @@
+<!-- Policy Management Dashboard: Card-Based Layout Component -->
+<style>
+  .policy-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+  }
+  .policy-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .policy-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  .policy-card-header {
+    padding: 20px;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+  }
+  .policy-category-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .badge-life { background-color: #e0e7ff; color: #4338ca; }
+  .badge-health { background-color: #d1fae5; color: #047857; }
+  .badge-motor { background-color: #fef3c7; color: #b45309; }
+  .badge-travel { background-color: #e0f2fe; color: #0369a1; }
+  .badge-default { background-color: #f3f4f6; color: #374151; }
+
+  .policy-card-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 6px 0;
+    line-height: 1.3;
+  }
+  .policy-card-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+    min-height: 40px;
+  }
+  .policy-metrics {
+    padding: 16px 20px;
+    background-color: #f8fafc;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .metric-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .metric-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .metric-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 2px;
+  }
+  .metric-value.highlight {
+    color: #2563eb;
+  }
+  .policy-card-footer {
+    padding: 16px 20px;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+  }
+  .policy-tenure-tag {
+    font-size: 12px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+  .filter-bar {
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    transition: all 0.2s ease;
+  }
+  .filter-pill.active, .filter-pill:hover {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 4px 14px;
+    background: #f8fafc;
+    width: 260px;
+  }
+  .search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 13px;
+    width: 100%;
+    padding: 4px;
+  }
+  .stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: #ffffff;
+    padding: 16px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  .stat-card.emerald {
+    background: linear-gradient(135deg, #065f46 0%, #10b981 100%);
+  }
+  .stat-card.amber {
+    background: linear-gradient(135deg, #92400e 0%, #f59e0b 100%);
+  }
+  .stat-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+  }
+  .stat-count {
+    font-size: 24px;
+    font-weight: 800;
+    margin-top: 4px;
+  }
+</style>
+
+<div class="policy-dashboard-component">
+  <!-- Stats Summary Header -->
+  <div class="stats-summary">
+    <div class="stat-card">
+      <div class="stat-title"><i class="fa fa-shield"></i> Active Insurance Plans</div>
+      <div class="stat-count" id="statTotalPlans"><%= policies ? policies.length : 0 %></div>
+    </div>
+    <div class="stat-card emerald">
+      <div class="stat-title"><i class="fa fa-money"></i> Max Coverage Available</div>
+      <div class="stat-count" id="statMaxCoverage">
+        $<%= policies && policies.length ? Math.max(...policies.map(p => p.sum_assurance || 0)).toLocaleString() : '0' %>
+      </div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-title"><i class="fa fa-tag"></i> Starting Premium From</div>
+      <div class="stat-count" id="statMinPremium">
+        $<%= policies && policies.length ? Math.min(...policies.map(p => p.premium || 0)).toLocaleString() : '0' %>/yr
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="filter-bar">
+    <div class="filter-pills" id="categoryFilters">
+      <div class="filter-pill active" data-category="ALL">All Plans (<%= policies ? policies.length : 0 %>)</div>
+      <% 
+        const categoriesFound = [];
+        if (policies) {
+          policies.forEach(p => {
+            if (p.category_name && !categoriesFound.includes(p.category_name)) {
+              categoriesFound.push(p.category_name);
+            }
+          });
+        }
+      %>
+      <% categoriesFound.forEach(cat => { %>
+        <div class="filter-pill" data-category="<%= cat %>"><%= cat %></div>
+      <% }); %>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <div class="search-box">
+        <i class="fa fa-search" style="color: #94a3b8; margin-right: 6px;"></i>
+        <input type="text" id="policySearchInput" placeholder="Search plans, cover, tenure...">
+      </div>
+
+      <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+        <a href="/admin-add-policy" class="btn btn-success btn-sm" style="border-radius: 20px; font-weight: 600; padding: 6px 16px;">
+          <i class="fa fa-plus-circle"></i> Add New Plan
+        </a>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Card Grid Container -->
+  <div class="policy-card-grid" id="policyGridContainer">
+    <% if (policies && policies.length > 0) { %>
+      <% policies.forEach(function(p) { %>
+        <% 
+          let badgeClass = 'badge-default';
+          const catLower = (p.category_name || '').toLowerCase();
+          if (catLower.includes('life')) badgeClass = 'badge-life';
+          else if (catLower.includes('health')) badgeClass = 'badge-health';
+          else if (catLower.includes('motor') || catLower.includes('car')) badgeClass = 'badge-motor';
+          else if (catLower.includes('travel')) badgeClass = 'badge-travel';
+        %>
+        <div class="policy-card" data-category="<%= p.category_name || '' %>" data-title="<%= (p.policy_name || '').toLowerCase() %>" data-premium="<%= p.premium %>" data-assurance="<%= p.sum_assurance %>">
+          <div class="policy-card-header">
+            <span class="policy-category-badge <%= badgeClass %>">
+              <i class="fa fa-folder-open-o"></i> <%= p.category_name || 'General' %>
+            </span>
+            <h4 class="policy-card-title"><%= p.policy_name %></h4>
+            <p class="policy-card-desc"><%= p.description || 'Reliable protection with swift claim settlement guarantees.' %></p>
+          </div>
+
+          <div class="policy-metrics">
+            <div class="metric-item">
+              <span class="metric-label">Sum Assured</span>
+              <span class="metric-value highlight">$<%= Number(p.sum_assurance).toLocaleString() %></span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Annual Premium</span>
+              <span class="metric-value">$<%= Number(p.premium).toLocaleString() %></span>
+            </div>
+          </div>
+
+          <div class="policy-card-footer">
+            <div class="policy-tenure-tag">
+              <i class="fa fa-calendar-check-o text-muted"></i>
+              <span><%= p.tenure %> <%= Number(p.tenure) === 1 ? 'Year' : 'Years' %></span>
+            </div>
+
+            <div class="policy-actions">
+              <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                <a href="/update-policy/<%= p.id %>" class="btn btn-outline-primary btn-sm" style="border: 1px solid #2563eb; color: #2563eb; border-radius: 6px; padding: 4px 10px; font-size: 12px; margin-right: 4px;">
+                  <i class="fa fa-edit"></i> Edit
+                </a>
+                <a href="/delete-policy/<%= p.id %>" onclick="return confirm('Are you sure you want to delete this policy plan?');" class="btn btn-outline-danger btn-sm" style="border: 1px solid #ef4444; color: #ef4444; border-radius: 6px; padding: 4px 10px; font-size: 12px;">
+                  <i class="fa fa-trash"></i>
+                </a>
+              <% } else if (typeof isCustomer !== 'undefined' && isCustomer) { %>
+                <a href="/customer/apply/<%= p.id %>" class="btn btn-primary btn-sm" style="background: #2563eb; border: none; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;">
+                  Apply Now <i class="fa fa-arrow-right"></i>
+                </a>
+              <% } else { %>
+                <a href="/customer/customerlogin" class="btn btn-primary btn-sm" style="background: #2563eb; border: none; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;">
+                  Login to Apply
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+        <i class="fa fa-folder-open-o" style="font-size: 48px; color: #94a3b8;"></i>
+        <h4 style="margin-top: 16px; color: #334155;">No Insurance Plans Available</h4>
+        <p style="color: #64748b;">Policies created in the system will display here persistently.</p>
+        <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+          <a href="/admin-add-policy" class="btn btn-primary mt-2">Create First Policy</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Client-side filtering & search for policy cards
+  document.addEventListener('DOMContentLoaded', () => {
+    const pills = document.querySelectorAll('#categoryFilters .filter-pill');
+    const searchInput = document.getElementById('policySearchInput');
+    const cards = document.querySelectorAll('.policy-card');
+
+    let currentCategory = 'ALL';
+    let currentSearchTerm = '';
+
+    function filterCards() {
+      let visibleCount = 0;
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category') || '';
+        const title = card.getAttribute('data-title') || '';
+        const matchesCategory = (currentCategory === 'ALL' || cat === currentCategory);
+        const matchesSearch = title.includes(currentSearchTerm) || cat.toLowerCase().includes(currentSearchTerm);
+
+        if (matchesCategory && matchesSearch) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCategory = pill.getAttribute('data-category');
+        filterCards();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value.toLowerCase().trim();
+        filterCards();
+      });
+    }
+  });
+</script>
