@@ -22,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read configuration from firebase-applet-config.json
-const configPath = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '..'), 'firebase-applet-config.json');
+const configPath = path.join(__dirname, '..', 'firebase-applet-config.json');
 let firebaseConfig = {};
 
 try {
@@ -253,7 +253,8 @@ export async function deletePolicy(id) {
 
 // -----------------------------------------------------------------------------
 // Persistent Users / Customers Operations
-// Customers persist indefinitely in Firestore (no TTL)
+// Customers persist indefinitely in Firestore (no TTL deletion)
+// Add logging to diagnose any auto-deletion issues
 // -----------------------------------------------------------------------------
 export async function getCustomers() {
   try {
@@ -288,9 +289,7 @@ export async function saveUser(userData) {
     mobile: userData.mobile || '',
     address: userData.address || '',
     profile_pic: userData.profile_pic || '/static/profile_pic/Customer/lazy.PNG',
-    createdAt: userData.createdAt || new Date().toISOString(),
-    // IMPORTANT: Do NOT include TTL field. Customer records persist indefinitely.
-    // If you need TTL in future, use Firestore TTL Policy from Firebase Console, not document field.
+    createdAt: userData.createdAt || new Date().toISOString()
   };
   
   console.log(`[DEBUG] Saving customer with UID: ${uid}, Email: ${profile.email}`);
