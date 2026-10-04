@@ -18,11 +18,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const configDirectory = process.env.LAMBDA_TASK_ROOT || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // Read configuration from firebase-applet-config.json
-const configPath = path.join(__dirname, '..', 'firebase-applet-config.json');
+const configPath = path.join(configDirectory, 'firebase-applet-config.json');
 let firebaseConfig = {};
 
 try {
