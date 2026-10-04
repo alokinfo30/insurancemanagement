@@ -32,22 +32,20 @@
 ---
 
 ## HOW TO RUN THIS PROJECT
-- Install Python(3.7.6) (Dont Forget to Tick Add to Path while installing Python)
-- Open Terminal and Execute Following Commands :
+This version uses Node.js, Express, and EJS. Install dependencies and start the local server:
+
+```bash
+npm install
+npm run dev
 ```
-python -m pip install -r requirements.txt
-```
-- Download This Project Zip Folder and Extract it
-- Move to project folder in Terminal. Then run following Commands :
-```
-py manage.py makemigrations
-py manage.py migrate
-py manage.py runserver
-```
-- Now enter following URL in Your Browser Installed On Your Pc
-```
-http://127.0.0.1:8000/
-```
+
+Open `http://localhost:3000/`.
+
+### Netlify deployment
+
+Netlify runs `npm run build`, which prepares static assets in `public/static`, and publishes `public`. The application is server-rendered rather than a single-page application: page routes and API requests are handled by the `app` Netlify Function, while published static files take precedence. EJS templates, static assets, and the existing Firebase configuration are included in the function bundle.
+
+Configure `SESSION_SECRET` in the Netlify environment. The existing Firebase-backed data and authentication behavior are unchanged; the current in-memory session store is not shared across function instances.
 
 ## CHANGES REQUIRED FOR CONTACT US PAGE
 - In settins.py file, You have to give your email and password

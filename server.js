@@ -32,7 +32,7 @@ import {
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.env.LAMBDA_TASK_ROOT || path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -625,6 +625,10 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Insurance Management System server running on http://0.0.0.0:${PORT}`);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Insurance Management System server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+export default app;

@@ -22,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read configuration from firebase-applet-config.json
-const configPath = path.join(__dirname, '..', 'firebase-applet-config.json');
+const configPath = path.join(process.env.LAMBDA_TASK_ROOT || path.join(__dirname, '..'), 'firebase-applet-config.json');
 let firebaseConfig = {};
 
 try {
