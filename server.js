@@ -31,15 +31,15 @@ import {
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = process.env.LAMBDA_TASK_ROOT || path.dirname(__filename);
+const appFilename = fileURLToPath(import.meta.url);
+const appDirectory = process.env.LAMBDA_TASK_ROOT || path.dirname(appFilename);
 
 const app = express();
 const PORT = 3000;
 
 // Set template engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(appDirectory, 'views'));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -56,8 +56,8 @@ app.use(
 );
 
 // Serve static assets
-app.use('/static', express.static(path.join(__dirname, 'static')));
-app.use(express.static(path.join(__dirname, 'static')));
+app.use('/static', express.static(path.join(appDirectory, 'static')));
+app.use(express.static(path.join(appDirectory, 'static')));
 
 // Global view variables
 app.use((req, res, next) => {
@@ -625,7 +625,7 @@ app.use((req, res) => {
 });
 
 // Start server
-if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+if (process.argv[1] && path.resolve(process.argv[1]) === appFilename) {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Insurance Management System server running on http://0.0.0.0:${PORT}`);
   });
