@@ -1,0 +1,249 @@
+<%- include('../partials/customer_header') %>
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    .claim-stat-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .claim-stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .icon-pending { background: #fef3c7; color: #b45309; }
+    .icon-approved { background: #d1fae5; color: #047857; }
+    .icon-total { background: #e0f2fe; color: #0369a1; }
+    
+    .claim-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      transition: all 0.2s;
+    }
+    .claim-card:hover {
+      border-color: #04868f;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .claim-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .claim-badge-pending { background: #fef3c7; color: #92400e; }
+    .claim-badge-review { background: #e0f2fe; color: #075985; }
+    .claim-badge-approved { background: #d1fae5; color: #065f46; }
+    .claim-badge-rejected { background: #fee2e2; color: #991b1b; }
+
+    .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+      color: #04868f;
+      cursor: default;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-bottom-color: transparent;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<div class="container" style="max-width: 1100px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0;">
+    <div>
+      <h3 style="margin: 0; font-weight: 700; color: #1e293b;">
+        <i class="fa fa-file-text-o" style="color: #04868f;"></i> Insurance Claims Portal
+      </h3>
+      <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">
+        File insurance claims, upload incident documentation, and track approval status in real-time.
+      </p>
+    </div>
+    <div>
+      <button class="btn btn-success" onclick="document.getElementById('tab-submit-claim').click();" style="border-radius: 20px; font-weight: 600;">
+        <i class="fa fa-plus-circle"></i> File New Claim
+      </button>
+    </div>
+  </div>
+
+  <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+    <div class="alert alert-success alert-dismissible" role="alert">
+      <i class="fa fa-check-circle"></i> <%= successMessage %>
+    </div>
+  <% } %>
+
+  <!-- Summary Cards -->
+  <div class="row" style="margin-bottom: 24px;">
+    <div class="col-md-4">
+      <div class="claim-stat-card">
+        <div class="claim-stat-icon icon-total"><i class="fa fa-files-o"></i></div>
+        <div>
+          <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Total Claims Filed</div>
+          <div style="font-size: 24px; font-weight: 800; color: #0f172a;"><%= claims ? claims.length : 0 %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="claim-stat-card">
+        <div class="claim-stat-icon icon-pending"><i class="fa fa-clock-o"></i></div>
+        <div>
+          <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Pending & Under Review</div>
+          <div style="font-size: 24px; font-weight: 800; color: #b45309;">
+            <%= claims ? claims.filter(c => c.status === 'Pending' || c.status === 'Under Review').length : 0 %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="claim-stat-card">
+        <div class="claim-stat-icon icon-approved"><i class="fa fa-check-circle"></i></div>
+        <div>
+          <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Approved & Settled</div>
+          <div style="font-size: 24px; font-weight: 800; color: #047857;">
+            <%= claims ? claims.filter(c => c.status === 'Approved').length : 0 %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs" style="margin-bottom: 24px;">
+    <li class="active"><a href="#track-claims" id="tab-track-claims" data-toggle="tab"><i class="fa fa-list"></i> Track My Claims (<%= claims ? claims.length : 0 %>)</a></li>
+    <li><a href="#submit-claim" id="tab-submit-claim" data-toggle="tab"><i class="fa fa-plus"></i> Submit New Claim</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- Tab 1: Track Claims -->
+    <div class="tab-pane active" id="track-claims">
+      <% if (claims && claims.length > 0) { %>
+        <% claims.forEach(function(claim) { %>
+          <% 
+            let badgeClass = 'claim-badge-pending';
+            if (claim.status === 'Under Review') badgeClass = 'claim-badge-review';
+            else if (claim.status === 'Approved') badgeClass = 'claim-badge-approved';
+            else if (claim.status === 'Rejected') badgeClass = 'claim-badge-rejected';
+          %>
+          <div class="claim-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                <span class="claim-badge <%= badgeClass %>"><%= claim.status %></span>
+                <span style="font-size: 12px; color: #94a3b8; margin-left: 10px;">Filed on <%= claim.createdAt ? claim.createdAt.split('T')[0] : 'Recent' %></span>
+                <h4 style="margin: 8px 0 4px 0; font-weight: 700; color: #1e293b;"><%= claim.policy_name %></h4>
+                <div style="font-size: 13px; color: #475569; font-weight: 600;"><i class="fa fa-tag"></i> Reason: <%= claim.reason %></div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Claimed Amount</div>
+                <div style="font-size: 22px; font-weight: 800; color: #04868f;">$<%= Number(claim.claim_amount).toLocaleString() %></div>
+                <% if (claim.settlement_amount && Number(claim.settlement_amount) > 0) { %>
+                  <div style="font-size: 12px; color: #047857; font-weight: 700;">Disbursed: $<%= Number(claim.settlement_amount).toLocaleString() %></div>
+                <% } %>
+              </div>
+            </div>
+
+            <div style="background: #f8fafc; border-radius: 6px; padding: 12px 16px; margin: 12px 0; font-size: 13px; color: #334155;">
+              <strong style="color: #0f172a;"><i class="fa fa-info-circle"></i> Incident & Supporting Details:</strong>
+              <p style="margin: 4px 0 0 0; line-height: 1.5;"><%= claim.supporting_details || 'No detailed documentation provided.' %></p>
+              <div style="margin-top: 6px; font-size: 12px; color: #64748b;">
+                <i class="fa fa-calendar"></i> Date of Incident: <strong><%= claim.incident_date || 'N/A' %></strong>
+              </div>
+            </div>
+
+            <% if (claim.admin_remarks && claim.admin_remarks !== 'Nothing') { %>
+              <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 10px 14px; font-size: 13px; color: #1e40af;">
+                <strong><i class="fa fa-comments-o"></i> Claim Assessor Remarks:</strong> <%= claim.admin_remarks %>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div style="text-align: center; padding: 50px 20px; background: #ffffff; border-radius: 8px; border: 1px dashed #cbd5e1;">
+          <i class="fa fa-shield" style="font-size: 48px; color: #94a3b8;"></i>
+          <h4 style="margin-top: 16px; color: #1e293b;">No Claims Submitted Yet</h4>
+          <p style="color: #64748b; max-width: 500px; margin: 8px auto 16px auto;">
+            Need to request cashless reimbursement or incident coverage? You can file a claim against any of your active insurance policies.
+          </p>
+          <button class="btn btn-primary" onclick="document.getElementById('tab-submit-claim').click();">
+            File Your First Claim
+          </button>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Tab 2: Submit New Claim Form -->
+    <div class="tab-pane" id="submit-claim">
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <h4 style="margin-top: 0; font-weight: 700; color: #1e293b;">
+          <i class="fa fa-pencil-square-o" style="color: #04868f;"></i> Insurance Claim Application
+        </h4>
+        <p style="color: #64748b; font-size: 13px; margin-bottom: 24px;">
+          Please provide accurate details about the event. All submitted claims are reviewed by the insurance administration desk within 24-48 hours.
+        </p>
+
+        <form method="POST" action="/customer/submit-claim">
+          <div class="form-group">
+            <label style="font-weight: 600;">Select Associated Policy *</label>
+            <select name="policy_id" class="form-control" required style="height: 42px;">
+              <% if (policies && policies.length > 0) { %>
+                <% policies.forEach(function(pol) { %>
+                  <option value="<%= pol.id %>"><%= pol.policy_name %> (Category: <%= pol.category_name %>, Max Cover: $<%= Number(pol.sum_assurance).toLocaleString() %>)</option>
+                <% }); %>
+              <% } else { %>
+                <option value="pol_default">General Insurance Plan</option>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label style="font-weight: 600;">Claim Amount Requested ($) *</label>
+              <input type="number" name="claim_amount" class="form-control" placeholder="e.g. 25000" min="1" step="any" required style="height: 42px;">
+            </div>
+            <div class="col-md-6 form-group">
+              <label style="font-weight: 600;">Date of Incident / Occurrence *</label>
+              <input type="date" name="incident_date" class="form-control" required style="height: 42px;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600;">Reason / Claim Nature *</label>
+            <input type="text" name="reason" class="form-control" placeholder="e.g. Emergency hospitalization, Auto collision repair, Flight cancellation" required style="height: 42px;">
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600;">Supporting Details & Incident Description *</label>
+            <textarea name="supporting_details" class="form-control" rows="5" placeholder="Detail the event, hospital/clinic name, attending physician or garage contacts, police report number (if applicable), and list of expenses incurred..." required></textarea>
+            <small class="text-muted">Data is securely stored and audited in Firestore Cloud.</small>
+          </div>
+
+          <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 700; background: #04868f; border-color: #04868f;">
+              <i class="fa fa-send"></i> Submit Claim to Cloud
+            </button>
+            <button type="reset" class="btn btn-default" style="padding: 10px 20px;">Clear Form</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/customer_footer') %>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>

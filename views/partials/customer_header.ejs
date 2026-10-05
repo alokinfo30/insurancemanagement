@@ -24,13 +24,13 @@
       font-weight: 900;
     }
     .logout_btn {
-      padding: 5px;
+      padding: 5px 12px;
       background: #19B3D3;
       text-decoration: none;
       float: right;
       margin-top: -30px;
       margin-right: 40px;
-      border-radius: 2px;
+      border-radius: 4px;
       font-size: 15px;
       font-weight: 600;
       color: #fff;
@@ -38,35 +38,48 @@
     .sidebar {
       background: #2f323a;
       margin-top: 70px;
-      padding-top: 30px;
+      padding-top: 24px;
       position: fixed;
       left: 0;
       width: 250px;
       height: 100%;
       z-index: 2;
+      overflow-y: auto;
     }
     .sidebar .profile_image {
-      width: 100px;
-      height: 100px;
-      border-radius: 100px;
-      margin-bottom: 10px;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      margin-bottom: 8px;
       object-fit: cover;
+      border: 3px solid #19B3D3;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     .sidebar h4 {
-      color: #ccc;
+      color: #eee;
       margin-top: 0;
+      margin-bottom: 2px;
+      font-size: 16px;
     }
     .sidebar a {
       color: #fff;
       display: block;
       width: 100%;
-      line-height: 60px;
+      line-height: 48px;
       text-decoration: none;
-      padding-left: 40px;
+      padding-left: 30px;
       box-sizing: border-box;
+      font-size: 14px;
+      transition: background 0.2s;
     }
     .sidebar a:hover {
       background: #19B3D3;
+      color: #ffffff;
+      text-decoration: none;
+    }
+    .sidebar a i {
+      width: 24px;
+      margin-right: 10px;
     }
     .content {
       margin-left: 250px;
@@ -91,15 +104,19 @@
 
   <div class="sidebar">
     <center>
-      <% if (customer && customer.profile_pic) { %>
-        <img src="<%= customer.profile_pic %>" class="profile_image" alt="Profile picture">
-      <% } else { %>
-        <img src="/static/image/admin.png" class="profile_image" alt="Profile picture">
-      <% } %>
-      <h4><%= customer ? customer.first_name : 'Customer' %></h4>
-      <h6 style="color:white">( Customer )</h6>
+      <a href="/customer/profile" title="Click to view/edit profile picture">
+        <img src="<%= (typeof customer !== 'undefined' && customer && customer.profile_pic) ? customer.profile_pic : '/static/image/avatar-default.svg' %>"
+             class="profile_image"
+             onerror="this.src='/static/image/avatar-default.svg'"
+             alt="Profile picture">
+      </a>
+      <h4><%= (typeof customer !== 'undefined' && customer && customer.first_name) ? customer.first_name : 'Customer' %></h4>
+      <h6 style="color: #19B3D3; margin-top: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">( Customer Portal )</h6>
     </center>
     <a href="/customer/customer-dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+    <a href="/customer/profile"><i class="fas fa-user-circle"></i><span>My Profile & Camera</span></a>
+    <a href="/customer/claims"><i class="fas fa-file-invoice-dollar"></i><span>Claims Portal</span></a>
+    <a href="/customer/categories"><i class="fas fa-list-alt"></i><span>Policy Categories</span></a>
     <a href="/customer/apply-policy"><i class="fab fa-product-hunt"></i><span>Apply Policy</span></a>
     <a href="/customer/history"><i class="fas fa-history"></i><span>History</span></a>
     <a href="/customer/ask-question"><i class="fas fa-question-circle"></i><span>Ask Question</span></a>

@@ -11,6 +11,7 @@
     }
     .order-card {
       color: rgb(255, 255, 255);
+      border-radius: 10px;
     }
     .bg-c-blue {
       background: #04868f;
@@ -25,13 +26,16 @@
       background: #663a30;
     }
     .card {
-      box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-      border: 1px solid black;
-      margin-bottom: 30px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+      border: none;
+      margin-bottom: 24px;
       transition: all 0.3s ease-in-out;
     }
+    .card:hover {
+      transform: translateY(-2px);
+    }
     .card .card-block {
-      padding: 25px;
+      padding: 22px;
     }
     .order-card i {
       font-size: 26px;
@@ -42,20 +46,43 @@
     .f-right {
       float: right;
     }
-    header {
-      left: 0px;
-      right: 0px;
+    .customer-table-panel {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      margin-top: 30px;
+      margin-bottom: 40px;
+    }
+    .customer-avatar-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #04868f;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 
-<div class="container">
+<div class="container" style="max-width: 1200px;">
+  <!-- Metric Stat Cards -->
   <div class="row">
     <div class="col-md-4 col-xl-3">
       <div class="card bg-c-green order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-customer" style="text-decoration: none; color:white;">Total Registered User</a></h6>
-          <h2 class="text-right"><i class="fas fa-users f-left"></i><span><%= total_user %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-view-customer" style="text-decoration: none; color:white; font-weight: 700;">Total Registered User</a></h6>
+          <h2 class="text-right"><i class="fa fa-users f-left"></i><span><%= total_user %></span></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-xl-3">
+      <div class="card bg-c-blue order-card">
+        <div class="card-block">
+          <h6 class="m-b-20"><a href="/admin-view-policy" style="text-decoration: none; color:white; font-weight: 700;">Listed Policies</a></h6>
+          <h2 class="text-right"><i class="fa fa-shield f-left"></i><span><%= total_policy %></span></h2>
         </div>
       </div>
     </div>
@@ -63,38 +90,28 @@
     <div class="col-md-4 col-xl-3">
       <div class="card bg-c-green order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-policy" style="text-decoration: none; color:white;">Listed Policies</a></h6>
-          <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span><%= total_policy %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-view-category" style="text-decoration: none; color:white; font-weight: 700;">Listed Categories</a></h6>
+          <h2 class="text-right"><i class="fa fa-folder-open f-left"></i><span><%= total_category %></span></h2>
         </div>
       </div>
     </div>
 
     <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
+      <div class="card bg-c-yellow order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-category" style="text-decoration: none; color:white;">Listed Categories</a></h6>
-          <h2 class="text-right"><i class="fas fa-list-alt f-left"></i><span><%= total_category %></span></h2>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
-        <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-question" style="text-decoration: none; color:white;">Total Question</a></h6>
-          <h2 class="text-right"><i class="fas fa-question-circle f-left"></i><span><%= total_question %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-question" style="text-decoration: none; color:white; font-weight: 700;">Total Questions</a></h6>
+          <h2 class="text-right"><i class="fa fa-question-circle f-left"></i><span><%= total_question %></span></h2>
         </div>
       </div>
     </div>
   </div>
 
-  <br>
   <div class="row">
     <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
+      <div class="card bg-c-blue order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-policy-holder" style="text-decoration: none; color:white;">Total Applied Policy Holder</a></h6>
-          <h2 class="text-right"><i class="fas fa-user-cog f-left"></i><span><%= total_policy_holder %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-view-policy-holder" style="text-decoration: none; color:white; font-weight: 700;">Total Applications</a></h6>
+          <h2 class="text-right"><i class="fa fa-file-text-o f-left"></i><span><%= total_policy_holder %></span></h2>
         </div>
       </div>
     </div>
@@ -102,30 +119,101 @@
     <div class="col-md-4 col-xl-3">
       <div class="card bg-c-green order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-approved-policy-holder" style="text-decoration: none; color:white;">Approved Policy Holder</a></h6>
-          <h2 class="text-right"><i class="fas fa-user-check f-left"></i><span><%= approved_policy_holder %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-view-approved-policy-holder" style="text-decoration: none; color:white; font-weight: 700;">Approved Policies</a></h6>
+          <h2 class="text-right"><i class="fa fa-check-circle f-left"></i><span><%= approved_policy_holder %></span></h2>
         </div>
       </div>
     </div>
 
     <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
+      <div class="card bg-c-yellow order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-disapproved-policy-holder" style="text-decoration: none; color:white;">Disapproved Policy Holder</a></h6>
-          <h2 class="text-right"><i class="fas fa-user-times f-left"></i><span><%= disapproved_policy_holder %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-view-disapproved-policy-holder" style="text-decoration: none; color:white; font-weight: 700;">Disapproved</a></h6>
+          <h2 class="text-right"><i class="fa fa-times-circle f-left"></i><span><%= disapproved_policy_holder %></span></h2>
         </div>
       </div>
     </div>
 
     <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
+      <div class="card bg-c-pink order-card">
         <div class="card-block">
-          <h6 class="m-b-20"><a href="/admin-view-waiting-policy-holder" style="text-decoration: none; color:white;">Policy Holder Waiting For Approval</a></h6>
-          <h2 class="text-right"><i class="fas fa-user-clock f-left"></i><span><%= waiting_policy_holder %></span></h2>
+          <h6 class="m-b-20"><a href="/admin-view-waiting-policy-holder" style="text-decoration: none; color:white; font-weight: 700;">Waiting Approval</a></h6>
+          <h2 class="text-right"><i class="fa fa-clock-o f-left"></i><span><%= waiting_policy_holder %></span></h2>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Registered Customers Directory Table on Admin Dashboard -->
+  <div class="customer-table-panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f1f5f9;">
+      <div>
+        <h4 style="margin: 0; font-weight: 700; color: #1e293b;">
+          <i class="fa fa-users" style="color: #04868f;"></i> Registered Customers Directory
+        </h4>
+        <p style="margin: 4px 0 0 0; color: #64748b; font-size: 13px;">
+          Customers who have registered or signed in with profile pictures from Firestore Cloud.
+        </p>
+      </div>
+      <div>
+        <a href="/admin-view-customer" class="btn btn-sm btn-outline-primary" style="font-weight: 600;">
+          <i class="fa fa-external-link"></i> Manage All Customers
+        </a>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="thead-light">
+          <tr>
+            <th style="width: 70px;">Picture</th>
+            <th>Customer Name</th>
+            <th>Email / Username</th>
+            <th>Mobile</th>
+            <th>Address</th>
+            <th>Registered</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (typeof customers !== 'undefined' && customers && customers.length > 0) { %>
+            <% customers.forEach(function(cust) { %>
+              <tr>
+                <td>
+                  <img src="<%= cust.profile_pic ? cust.profile_pic : '/static/image/avatar-default.svg' %>"
+                       class="customer-avatar-thumb"
+                       onerror="this.src='/static/image/avatar-default.svg'"
+                       alt="<%= cust.first_name %>">
+                </td>
+                <td>
+                  <strong><%= cust.first_name %> <%= cust.last_name || '' %></strong>
+                </td>
+                <td><%= cust.email || cust.username %></td>
+                <td><%= cust.mobile || 'Not provided' %></td>
+                <td><%= cust.address || 'Not specified' %></td>
+                <td><small class="text-muted"><%= cust.createdAt ? cust.createdAt.split('T')[0] : 'Recent' %></small></td>
+                <td>
+                  <a href="/update-customer/<%= cust.id || cust.uid %>" class="btn btn-sm btn-primary" style="padding: 3px 8px; font-size: 12px;">
+                    <i class="fa fa-edit"></i> Edit
+                  </a>
+                  <a href="/delete-customer/<%= cust.id || cust.uid %>" onclick="return confirm('Are you sure you want to remove this customer?');" class="btn btn-sm btn-danger" style="padding: 3px 8px; font-size: 12px;">
+                    <i class="fa fa-trash"></i>
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">
+                No registered customers found.
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <%- include('../partials/admin_footer') %>

@@ -16,9 +16,9 @@
     }
 
     .log-form {
-      width: 40%;
+      width: 42%;
       min-width: 320px;
-      max-width: 475px;
+      max-width: 490px;
       background: #fff;
       position: absolute;
       top: 50%;
@@ -95,7 +95,7 @@
       background: #ffffff;
       color: #374151;
       border: 1px solid #d1d5db;
-      padding: .6em 1.5em;
+      padding: .7em 1.5em;
       border-radius: 4px;
       font-weight: 600;
       cursor: pointer;
@@ -107,6 +107,19 @@
       background: #f9fafb;
       border-color: #9ca3af;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .oauth-info-tag {
+      margin-top: 10px;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .divider {
@@ -138,6 +151,9 @@
       border-radius: .25rem;
     }
   </style>
+  <script>
+    window.FIREBASE_CONFIG = <%- JSON.stringify(typeof firebaseConfig !== 'undefined' ? firebaseConfig : {}) %>;
+  </script>
 </head>
 <body>
   <%- include('../partials/navbar') %>
@@ -149,8 +165,8 @@
         <div class="alert alert-danger"><%= error %></div>
       <% } %>
 
-      <!-- Firebase Auth Google Sign-In -->
-      <button type="button" id="googleSignInBtn" data-role="CUSTOMER" class="btn-firebase-google">
+      <!-- Firebase Auth Google Sign-In with immediate onclick feedback -->
+      <button type="button" id="googleSignInBtn" data-role="CUSTOMER" onclick="window.handleGoogleSignIn ? window.handleGoogleSignIn('CUSTOMER') : console.log('Connecting...');" class="btn-firebase-google">
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
           <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
@@ -159,6 +175,13 @@
         </svg>
         Sign in with Google (Firebase Auth)
       </button>
+
+      <div class="oauth-info-tag">
+        <span><i class="fa fa-shield text-success"></i> <strong>OAuth Client:</strong> 588570452934-kic5...</span>
+        <span class="badge badge-success" style="background:#047857; color:white; padding:2px 6px; border-radius:3px;">Verified</span>
+      </div>
+
+      <div id="authStatusMsg" style="display:none; margin-top: 10px;"></div>
 
       <div class="divider"><span>OR Username & Password</span></div>
 

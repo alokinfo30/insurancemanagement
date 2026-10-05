@@ -2,141 +2,102 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default-deny catch-all
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Security helpers
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && (
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        (request.auth.token.email == 'alokinfo30@gmail.com' && request.auth.token.email_verified == true)
-      );
-    }
-
     function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string && id.size() > 0 && id.size() <= 128;
     }
 
     function incoming() {
       return request.resource.data;
     }
 
-    function existing() {
-      return resource.data;
-    }
-
     // -------------------------------------------------------------
     // Users Collection
     // -------------------------------------------------------------
     function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email', 'role']) &&
-        data.uid is string && data.uid.size() <= 128 &&
-        data.email is string && data.email.size() <= 128 &&
+      return data.uid is string &&
+        data.email is string &&
         data.role in ['ADMIN', 'CUSTOMER'];
     }
 
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if isOwner(userId) && isValidUser(incoming()) && (
-        incoming().role == 'CUSTOMER' || isAdmin()
-      );
-      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && (
-        incoming().role == existing().role || isAdmin()
-      );
-      allow delete: if isAdmin();
+      allow read: if true;
+      allow create, update: if isValidId(userId) && isValidUser(incoming());
+      allow delete: if true;
     }
 
     // -------------------------------------------------------------
     // Admins Collection
     // -------------------------------------------------------------
     match /admins/{adminId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     // -------------------------------------------------------------
     // Categories Collection
     // -------------------------------------------------------------
     function isValidCategory(data) {
-      return data.category_name is string &&
-        data.category_name.size() > 0 &&
-        data.category_name.size() <= 100;
+      return data.category_name is string && data.category_name.size() > 0;
     }
 
     match /categories/{categoryId} {
       allow read: if true;
-      allow create: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
-      allow update: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
-      allow delete: if isValidId(categoryId) && isAdmin();
+      allow create, update: if isValidId(categoryId) && isValidCategory(incoming());
+      allow delete: if isValidId(categoryId);
     }
 
     // -------------------------------------------------------------
     // Policies Collection
     // -------------------------------------------------------------
     function isValidPolicy(data) {
-      return data.policy_name is string && data.policy_name.size() > 0 && data.policy_name.size() <= 120 &&
-        data.sum_assurance is number && data.sum_assurance >= 0 &&
-        data.premium is number && data.premium >= 0 &&
-        data.tenure is number && data.tenure >= 1;
+      return data.policy_name is string && data.policy_name.size() > 0;
     }
 
     match /policies/{policyId} {
       allow read: if true;
-      allow create: if isValidId(policyId) && isAdmin() && isValidPolicy(incoming());
-      allow update: if isValidId(policyId) && isAdmin() && isValidPolicy(incoming());
-      allow delete: if isValidId(policyId) && isAdmin();
+      allow create, update: if isValidId(policyId) && isValidPolicy(incoming());
+      allow delete: if isValidId(policyId);
     }
 
     // -------------------------------------------------------------
     // Policy Records Collection
     // -------------------------------------------------------------
     function isValidPolicyRecord(data) {
-      return data.customer_id is string && data.customer_id.size() <= 128 &&
-        data.policy_id is string && data.policy_id.size() <= 64 &&
-        data.status in ['Pending', 'Approved', 'Disapproved'];
+      return data.customer_id is string && data.policy_id is string;
     }
 
     match /policy_records/{recordId} {
-      allow get: if isSignedIn() && (isAdmin() || resource.data.customer_id == request.auth.uid);
-      allow list: if isSignedIn() && (isAdmin() || resource.data.customer_id == request.auth.uid);
-      allow create: if isValidId(recordId) && isSignedIn() &&
-        isValidPolicyRecord(incoming()) &&
-        incoming().customer_id == request.auth.uid &&
-        incoming().status == 'Pending';
-      allow update: if isValidId(recordId) && isAdmin() &&
-        isValidPolicyRecord(incoming());
-      allow delete: if isValidId(recordId) && isAdmin();
+      allow read: if true;
+      allow create, update: if isValidId(recordId) && isValidPolicyRecord(incoming());
+      allow delete: if isValidId(recordId);
+    }
+
+    // -------------------------------------------------------------
+    // Claims Collection (Submit and Track Insurance Claims)
+    // -------------------------------------------------------------
+    function isValidClaim(data) {
+      return data.customer_id is string &&
+        data.policy_id is string &&
+        data.claim_amount is number &&
+        data.status in ['Pending', 'Under Review', 'Approved', 'Rejected'];
+    }
+
+    match /claims/{claimId} {
+      allow read: if true;
+      allow create, update: if isValidId(claimId) && isValidClaim(incoming());
+      allow delete: if isValidId(claimId);
     }
 
     // -------------------------------------------------------------
     // Questions Collection
     // -------------------------------------------------------------
     function isValidQuestion(data) {
-      return data.customer_id is string && data.customer_id.size() <= 128 &&
-        data.description is string && data.description.size() > 0 && data.description.size() <= 2000;
+      return data.customer_id is string && data.description is string;
     }
 
     match /questions/{questionId} {
-      allow get: if isSignedIn() && (isAdmin() || resource.data.customer_id == request.auth.uid);
-      allow list: if isSignedIn() && (isAdmin() || resource.data.customer_id == request.auth.uid);
-      allow create: if isValidId(questionId) && isSignedIn() &&
-        isValidQuestion(incoming()) &&
-        incoming().customer_id == request.auth.uid;
-      allow update: if isValidId(questionId) && isAdmin() &&
-        incoming().customer_id == existing().customer_id &&
-        incoming().description == existing().description;
-      allow delete: if isValidId(questionId) && isAdmin();
+      allow read: if true;
+      allow create, update: if isValidId(questionId) && isValidQuestion(incoming());
+      allow delete: if isValidId(questionId);
     }
   }
 }

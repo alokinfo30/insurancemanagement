@@ -1,55 +1,122 @@
 <%- include('../partials/customer_header') %>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
 <style>
   a:link { text-decoration: none; }
-  .order-card { color: rgb(255, 255, 255); }
+  .order-card { color: rgb(255, 255, 255); border-radius: 10px; }
+  .bg-c-blue { background: #04868f; }
   .bg-c-green { background: #4C51BF; }
-  .card { box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16); border: 1px solid black; margin-bottom: 30px; transition: all 0.3s ease-in-out; }
-  .card .card-block { padding: 25px; }
+  .bg-c-teal { background: #0d9488; }
+  .bg-c-amber { background: #d97706; }
+  .card { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: none; margin-bottom: 24px; transition: transform 0.2s; }
+  .card:hover { transform: translateY(-3px); }
+  .card .card-block { padding: 22px; }
   .order-card i { font-size: 26px; }
   .f-left { float: left; }
   .f-right { float: right; }
+  .user-welcome-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  }
+  .dash-avatar {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #04868f;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
 </style>
-<div class="container">
+
+<div class="container" style="max-width: 1100px;">
+
+  <!-- Customer Profile Greeting Banner -->
+  <div class="user-welcome-box">
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <a href="/customer/profile" title="Click to view/change profile picture with Camera">
+        <img src="<%= (typeof customer !== 'undefined' && customer && customer.profile_pic) ? customer.profile_pic : '/static/image/avatar-default.svg' %>"
+             class="dash-avatar"
+             onerror="this.src='/static/image/avatar-default.svg'"
+             alt="Customer Profile Picture">
+      </a>
+      <div>
+        <h4 style="margin: 0; font-weight: 700; color: #1e293b;">
+          Welcome back, <%= (typeof customer !== 'undefined' && customer && customer.first_name) ? customer.first_name : 'Customer' %>!
+        </h4>
+        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
+          <span><i class="fa fa-envelope-o"></i> <%= (typeof customer !== 'undefined' && customer && customer.email) ? customer.email : '' %></span>
+          <% if (typeof customer !== 'undefined' && customer && customer.mobile) { %>
+            <span style="margin-left: 15px;"><i class="fa fa-phone"></i> <%= customer.mobile %></span>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <a href="/customer/profile" class="btn btn-sm btn-outline-info" style="border-radius: 20px; font-weight: 600; padding: 6px 16px;">
+        <i class="fas fa-camera"></i> Camera & Profile
+      </a>
+      <a href="/customer/claims" class="btn btn-sm btn-primary" style="background: #04868f; border-color: #04868f; border-radius: 20px; font-weight: 600; padding: 6px 16px; margin-left: 6px;">
+        <i class="fas fa-file-invoice-dollar"></i> Claims Portal
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Summary Cards -->
   <div class="row">
-    <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
+    <!-- Policy Categories (Clicking shows policy categories made by admin) -->
+    <div class="col-md-6 col-xl-3">
+      <div class="card bg-c-blue order-card">
         <div class="card-block">
-          <h6><a href="/customer/apply-policy" style="color:white">Available Policy</a></h6>
-          <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span><%= available_policy %></span></h2>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
-        <div class="card-block">
-          <h6><a href="/customer/history" style="color:white">Applied Policy</a></h6>
-          <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span><%= applied_policy %></span></h2>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4 col-xl-3">
-      <div class="card bg-c-green order-card">
-        <div class="card-block">
-          <h6><a href="/customer/apply-policy" style="color:white">Policy Categories</a></h6>
+          <h6><a href="/customer/categories" style="color:white; font-weight: 700;">Policy Categories</a></h6>
           <h2 class="text-right"><i class="fas fa-list-alt f-left"></i><span><%= total_category %></span></h2>
+          <small><a href="/customer/categories" style="color: #e0f2fe;">View admin categories &rarr;</a></small>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4 col-xl-3">
+    <!-- Available Policies -->
+    <div class="col-md-6 col-xl-3">
       <div class="card bg-c-green order-card">
         <div class="card-block">
-          <h6><a href="/customer/question-history" style="color:white">Total Question Asked</a></h6>
-          <h2 class="text-right"><i class="fas fa-question-circle f-left"></i><span><%= total_question %></span></h2>
+          <h6><a href="/customer/apply-policy" style="color:white; font-weight: 700;">Available Policies</a></h6>
+          <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span><%= available_policy %></span></h2>
+          <small><a href="/customer/apply-policy" style="color: #e0e7ff;">Explore plans &rarr;</a></small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied Policies -->
+    <div class="col-md-6 col-xl-3">
+      <div class="card bg-c-teal order-card">
+        <div class="card-block">
+          <h6><a href="/customer/history" style="color:white; font-weight: 700;">Applied Policies</a></h6>
+          <h2 class="text-right"><i class="fas fa-history f-left"></i><span><%= applied_policy %></span></h2>
+          <small><a href="/customer/history" style="color: #ccfbf1;">View applications &rarr;</a></small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insurance Claims Filed -->
+    <div class="col-md-6 col-xl-3">
+      <div class="card bg-c-amber order-card">
+        <div class="card-block">
+          <h6><a href="/customer/claims" style="color:white; font-weight: 700;">Insurance Claims</a></h6>
+          <h2 class="text-right"><i class="fas fa-file-invoice-dollar f-left"></i><span><%= typeof total_claims !== 'undefined' ? total_claims : 1 %></span></h2>
+          <small><a href="/customer/claims" style="color: #fef3c7;">Track claim status &rarr;</a></small>
         </div>
       </div>
     </div>
   </div>
+
 </div>
 
 <%- include('../partials/customer_footer') %>

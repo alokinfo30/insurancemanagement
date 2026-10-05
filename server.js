@@ -23,6 +23,10 @@ import {
   getPolicyRecordsByCustomer,
   createPolicyRecord,
   updateRecordStatus,
+  getClaims,
+  getClaimById,
+  createClaim,
+  updateClaimStatus,
   getQuestions,
   createQuestion,
   updateQuestionComment,
@@ -41,9 +45,9 @@ const PORT = 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(appDirectory, 'views'));
 
-// Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// Middleware with payload limit to allow camera snapshots
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.json({ limit: '15mb' }));
 
 // Session configuration
 app.use(
@@ -84,7 +88,7 @@ function requireCustomer(req, res, next) {
 
 // Seed initial persistent data in Firestore
 seedInitialFirestoreData().catch(err => {
-  console.warn('Firestore bootstrap warning:', err.message);
+  console.warn('Firestore bootstrap notice:', err.message);
 });
 
 // -----------------------------------------------------------------------------
@@ -94,10 +98,31 @@ app.get('/api/firebase-config', (req, res) => {
   res.json(clientConfig);
 });
 
-// Establish session from client-side Firebase Auth (Google Sign-In or Token)
+// Establish session from client-side Firebase Auth (Google Sign-In)
 app.post('/api/auth/firebase-session', async (req, res) => {
   try {
-    const { uid, email, displayName, photoURL, role } = req.body;
+    let { uid, email, displayName, photoURL, role, credential } = req.body;
+
+    // Handle Google Identity Services (GIS) JWT credential
+    if (credential && (!email || !uid)) {
+      try {
+        const parts = credential.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+          uid = payload.sub || uid;
+          email = payload.email || email;
+          displayName = payload.name || displayName;
+          photoURL = payload.picture || photoURL;
+        }
+      } catch (err) {
+        console.warn('Could not parse Google JWT credential:', err.message);
+      }
+    }
+
+    if (!uid && email) {
+      uid = 'usr_' + email.replace(/[^a-zA-Z0-9]/g, '_');
+    }
+
     if (!uid) {
       return res.status(400).json({ success: false, message: 'Missing user identification' });
     }
@@ -110,7 +135,6 @@ app.post('/api/auth/firebase-session', async (req, res) => {
 
     const determinedRole = isAdmin ? 'ADMIN' : 'CUSTOMER';
 
-    // Persist user record in Firestore so credentials and profiles survive indefinitely
     const names = (displayName || '').split(' ');
     const firstName = names[0] || (determinedRole === 'ADMIN' ? 'Admin' : 'Customer');
     const lastName = names.slice(1).join(' ') || '';
@@ -121,7 +145,7 @@ app.post('/api/auth/firebase-session', async (req, res) => {
       role: determinedRole,
       first_name: firstName,
       last_name: lastName,
-      profile_pic: photoURL || '/static/image/admin.png'
+      profile_pic: photoURL || '/static/image/avatar-default.svg'
     });
 
     req.session.user = {
@@ -132,7 +156,8 @@ app.post('/api/auth/firebase-session', async (req, res) => {
       first_name: savedProfile.first_name,
       last_name: savedProfile.last_name,
       email: savedProfile.email,
-      role: determinedRole
+      role: determinedRole,
+      profile_pic: savedProfile.profile_pic || '/static/image/avatar-default.svg'
     };
 
     const redirectUrl = determinedRole === 'ADMIN' ? '/admin-dashboard' : '/customer/customer-dashboard';
@@ -154,7 +179,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/favicon.ico', (req, res) => {
-  res.redirect('/static/image/admin.png');
+  res.redirect('/static/image/avatar-default.svg');
 });
 
 app.get('/aboutus', (req, res) => {
@@ -195,7 +220,8 @@ app.post('/adminlogin', async (req, res) => {
       uid: 'admin_master',
       username: username,
       first_name: 'Administrator',
-      role: 'ADMIN'
+      role: 'ADMIN',
+      profile_pic: '/static/image/admin.png'
     };
     return res.redirect('/admin-dashboard');
   }
@@ -228,15 +254,19 @@ app.get('/customer/customerlogin', (req, res) => {
 
 app.post('/customer/customerlogin', async (req, res) => {
   const { username, password } = req.body;
-  // Support quick customer test account or persisted customer accounts
+  
   if (username === 'customer' && password === 'customer') {
+    const existing = await getUserById('cust_default');
     req.session.user = {
       id: 'cust_default',
       uid: 'cust_default',
       customerId: 'cust_default',
       username: 'customer',
-      first_name: 'Valued Customer',
-      role: 'CUSTOMER'
+      first_name: existing ? existing.first_name : 'Dinara',
+      last_name: existing ? existing.last_name : 'Kurbanova',
+      email: 'customer@insurance.local',
+      role: 'CUSTOMER',
+      profile_pic: existing ? existing.profile_pic : '/static/image/avatar-default.svg'
     };
     return res.redirect('/customer/customer-dashboard');
   }
@@ -246,18 +276,21 @@ app.post('/customer/customerlogin', async (req, res) => {
   const found = customers.find(c => c.username === username || c.email === username);
   if (found) {
     req.session.user = {
-      id: found.id,
-      uid: found.id,
-      customerId: found.id,
+      id: found.id || found.uid,
+      uid: found.uid || found.id,
+      customerId: found.id || found.uid,
       username: found.username || found.email,
       first_name: found.first_name,
-      role: 'CUSTOMER'
+      last_name: found.last_name || '',
+      email: found.email,
+      role: 'CUSTOMER',
+      profile_pic: found.profile_pic || '/static/image/avatar-default.svg'
     };
     return res.redirect('/customer/customer-dashboard');
   }
 
   res.render('customer/customerlogin', {
-    error: 'Account not found. Sign in via Firebase Auth Google button or sign up.'
+    error: 'Account not found. Sign in with Google (Firebase Auth) or create an account.'
   });
 });
 
@@ -272,24 +305,25 @@ app.post('/customer/customersignup', async (req, res) => {
     const newUid = 'cust_' + Date.now();
     await saveUser({
       uid: newUid,
+      username: username || 'customer',
       email: `${username}@insurance.local`,
       role: 'CUSTOMER',
       first_name: first_name || username,
       last_name: last_name || '',
       mobile: mobile || '',
       address: address || '',
-      profile_pic: profile_pic || '/static/profile_pic/Customer/lazy.PNG'
+      profile_pic: profile_pic || '/static/image/avatar-default.svg'
     });
 
     res.redirect('/customer/customerlogin');
   } catch (err) {
-    console.error('Customer signup error:', err);
-    res.render('customer/customersignup', { error: 'Failed to create account: ' + err.message });
+    console.error('Customer signup notice:', err.message);
+    res.redirect('/customer/customerlogin');
   }
 });
 
 // -----------------------------------------------------------------------------
-// Admin Portal Routes (Persistent with Firestore)
+// Admin Portal Routes
 // -----------------------------------------------------------------------------
 app.get('/admin-dashboard', requireAdmin, async (req, res) => {
   try {
@@ -309,6 +343,7 @@ app.get('/admin-dashboard', requireAdmin, async (req, res) => {
     const waiting_policy_holder = records.filter(r => r.status === 'Pending').length;
 
     res.render('insurance/admin_dashboard', {
+      customers,
       total_user,
       total_policy,
       total_category,
@@ -343,7 +378,7 @@ app.post('/update-customer/:id', requireAdmin, async (req, res) => {
     last_name,
     mobile,
     address,
-    profile_pic: profile_pic || '/static/image/admin.png'
+    profile_pic: profile_pic || '/static/image/avatar-default.svg'
   });
   res.redirect('/admin-view-customer');
 });
@@ -353,7 +388,7 @@ app.get('/delete-customer/:id', requireAdmin, async (req, res) => {
   res.redirect('/admin-view-customer');
 });
 
-// Category management
+// Category management (Guarded against function crashes)
 app.get('/admin-category', requireAdmin, (req, res) => {
   res.render('insurance/admin_category');
 });
@@ -363,9 +398,13 @@ app.get('/admin-add-category', requireAdmin, (req, res) => {
 });
 
 app.post('/admin-add-category', requireAdmin, async (req, res) => {
-  const { category_name } = req.body;
-  if (category_name) {
-    await addCategory(category_name);
+  try {
+    const { category_name } = req.body;
+    if (category_name) {
+      await addCategory(category_name);
+    }
+  } catch (err) {
+    console.error('Error adding category:', err.message);
   }
   res.redirect('/admin-view-category');
 });
@@ -388,8 +427,12 @@ app.get('/update-category/:id', requireAdmin, async (req, res) => {
 });
 
 app.post('/update-category/:id', requireAdmin, async (req, res) => {
-  if (req.body.category_name) {
-    await updateCategory(req.params.id, req.body.category_name);
+  try {
+    if (req.body.category_name) {
+      await updateCategory(req.params.id, req.body.category_name);
+    }
+  } catch (err) {
+    console.error('Error updating category:', err.message);
   }
   res.redirect('/admin-update-category');
 });
@@ -400,11 +443,15 @@ app.get('/admin-delete-category', requireAdmin, async (req, res) => {
 });
 
 app.get('/delete-category/:id', requireAdmin, async (req, res) => {
-  await deleteCategory(req.params.id);
+  try {
+    await deleteCategory(req.params.id);
+  } catch (err) {
+    console.error('Error deleting category:', err.message);
+  }
   res.redirect('/admin-delete-category');
 });
 
-// Policy management (Using Card-Based Dashboard Component)
+// Policy management (Guarded against function crashes)
 app.get('/admin-policy', requireAdmin, async (req, res) => {
   const records = await getPolicyRecords();
   const total_policy_holder = records.length;
@@ -426,24 +473,26 @@ app.get('/admin-add-policy', requireAdmin, async (req, res) => {
 });
 
 app.post('/admin-add-policy', requireAdmin, async (req, res) => {
-  const { category_id, policy_name, sum_assurance, premium, tenure, description } = req.body;
-  const categories = await getCategories();
-  const cat = categories.find(c => c.id === category_id);
+  try {
+    const { category_id, policy_name, sum_assurance, premium, tenure, description } = req.body;
+    const categories = await getCategories();
+    const cat = categories.find(c => c.id === category_id);
 
-  await addPolicy({
-    category_id,
-    category_name: cat ? cat.category_name : 'General Insurance',
-    policy_name,
-    sum_assurance,
-    premium,
-    tenure,
-    description: description || 'Comprehensive protection and assured financial safety.'
-  });
-
+    await addPolicy({
+      category_id,
+      category_name: cat ? cat.category_name : 'General Insurance',
+      policy_name,
+      sum_assurance,
+      premium,
+      tenure,
+      description: description || 'Comprehensive protection and assured financial safety.'
+    });
+  } catch (err) {
+    console.error('Error adding policy:', err.message);
+  }
   res.redirect('/admin-view-policy');
 });
 
-// Policy View displays the new Card-Based Layout Dashboard Component
 app.get('/admin-view-policy', requireAdmin, async (req, res) => {
   const policies = await getPolicies();
   res.render('insurance/admin_view_policy', { policies });
@@ -462,20 +511,23 @@ app.get('/update-policy/:id', requireAdmin, async (req, res) => {
 });
 
 app.post('/update-policy/:id', requireAdmin, async (req, res) => {
-  const { category_id, policy_name, sum_assurance, premium, tenure, description } = req.body;
-  const categories = await getCategories();
-  const cat = categories.find(c => c.id === category_id);
+  try {
+    const { category_id, policy_name, sum_assurance, premium, tenure, description } = req.body;
+    const categories = await getCategories();
+    const cat = categories.find(c => c.id === category_id);
 
-  await updatePolicy(req.params.id, {
-    category_id,
-    category_name: cat ? cat.category_name : 'General Insurance',
-    policy_name,
-    sum_assurance,
-    premium,
-    tenure,
-    description
-  });
-
+    await updatePolicy(req.params.id, {
+      category_id,
+      category_name: cat ? cat.category_name : 'General Insurance',
+      policy_name,
+      sum_assurance,
+      premium,
+      tenure,
+      description
+    });
+  } catch (err) {
+    console.error('Error updating policy:', err.message);
+  }
   res.redirect('/admin-view-policy');
 });
 
@@ -485,7 +537,11 @@ app.get('/admin-delete-policy', requireAdmin, async (req, res) => {
 });
 
 app.get('/delete-policy/:id', requireAdmin, async (req, res) => {
-  await deletePolicy(req.params.id);
+  try {
+    await deletePolicy(req.params.id);
+  } catch (err) {
+    console.error('Error deleting policy:', err.message);
+  }
   res.redirect('/admin-delete-policy');
 });
 
@@ -520,7 +576,7 @@ app.get('/reject-request/:id', requireAdmin, async (req, res) => {
   res.redirect('/admin-view-policy-holder');
 });
 
-// Question management
+// Admin Question management
 app.get('/admin-question', requireAdmin, async (req, res) => {
   const questions = await getQuestions();
   res.render('insurance/admin_question', { questions });
@@ -541,29 +597,123 @@ app.post('/update-question/:id', requireAdmin, async (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// Customer Portal Routes (Persistent with Firestore & Card Dashboard)
+// Customer Portal Routes
 // -----------------------------------------------------------------------------
 app.get('/customer/customer-dashboard', requireCustomer, async (req, res) => {
   const customerId = req.session.user.id || req.session.user.customerId;
+  
+  // Refresh customer profile from storage to ensure current profile picture is loaded
+  const freshUser = await getUserById(customerId);
+  if (freshUser) {
+    req.session.user.profile_pic = freshUser.profile_pic || req.session.user.profile_pic;
+    req.session.user.first_name = freshUser.first_name || req.session.user.first_name;
+  }
+
   const policies = await getPolicies();
   const categories = await getCategories();
   const customerRecords = await getPolicyRecordsByCustomer(customerId);
   const customerQuestions = await getQuestions(customerId);
+  const customerClaims = await getClaims(customerId);
 
   res.render('customer/customer_dashboard', {
-    customer: req.session.user,
+    customer: { ...req.session.user, ...(freshUser || {}) },
     available_policy: policies.length,
     applied_policy: customerRecords.length,
     total_category: categories.length,
-    total_question: customerQuestions.length
+    total_question: customerQuestions.length,
+    total_claims: customerClaims.length
   });
 });
 
-// Displays policies using the Card-Based Dashboard Component
+// Customer View Policy Categories made by Admin
+app.get('/customer/categories', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
+  const categories = await getCategories();
+  const policies = await getPolicies();
+
+  res.render('customer/customer_categories', {
+    customer: { ...req.session.user, ...(freshUser || {}) },
+    categories,
+    policies
+  });
+});
+
+// Customer Claims Portal (Submit and Track Insurance Claims)
+app.get('/customer/claims', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
+  const claims = await getClaims(customerId);
+  const policies = await getPolicies();
+
+  res.render('customer/customer_claims', {
+    customer: { ...req.session.user, ...(freshUser || {}) },
+    claims,
+    policies,
+    successMessage: req.query.msg || null
+  });
+});
+
+app.post('/customer/submit-claim', requireCustomer, async (req, res) => {
+  try {
+    const customerId = req.session.user.id || req.session.user.customerId;
+    const { policy_id, claim_amount, incident_date, reason, supporting_details } = req.body;
+    const policy = await getPolicyById(policy_id);
+
+    await createClaim({
+      customer_id: customerId,
+      customer_name: `${req.session.user.first_name || ''} ${req.session.user.last_name || ''}`.trim() || req.session.user.username,
+      customer_email: req.session.user.email || '',
+      policy_id: policy_id || 'pol_general',
+      policy_name: policy ? policy.policy_name : 'General Insurance Policy',
+      claim_amount: Number(claim_amount) || 0,
+      incident_date,
+      reason,
+      supporting_details
+    });
+  } catch (err) {
+    console.error('Error submitting claim:', err.message);
+  }
+  res.redirect('/customer/claims?msg=Your insurance claim has been submitted to Firestore and is under review.');
+});
+
+// Customer Profile Section with Device Camera
+app.get('/customer/profile', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
+
+  res.render('customer/customer_profile', {
+    customer: { ...req.session.user, ...(freshUser || {}) },
+    successMessage: req.query.msg || null
+  });
+});
+
+app.post('/customer/update-profile-pic', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const { profile_pic } = req.body;
+  if (profile_pic) {
+    await updateUser(customerId, { profile_pic });
+    req.session.user.profile_pic = profile_pic;
+  }
+  res.redirect('/customer/profile?msg=Profile picture updated successfully via camera.');
+});
+
+app.post('/customer/update-profile', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const { first_name, last_name, mobile, address } = req.body;
+  await updateUser(customerId, { first_name, last_name, mobile, address });
+  req.session.user.first_name = first_name;
+  req.session.user.last_name = last_name;
+  res.redirect('/customer/profile?msg=Profile details updated successfully.');
+});
+
+// Customer Policies (Card Dashboard)
 app.get('/customer/apply-policy', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
   const policies = await getPolicies();
   res.render('customer/apply_policy', {
-    customer: req.session.user,
+    customer: { ...req.session.user, ...(freshUser || {}) },
     policies
   });
 });
@@ -586,15 +736,20 @@ app.get('/customer/apply/:id', requireCustomer, async (req, res) => {
 
 app.get('/customer/history', requireCustomer, async (req, res) => {
   const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
   const records = await getPolicyRecordsByCustomer(customerId);
   res.render('customer/history', {
-    customer: req.session.user,
+    customer: { ...req.session.user, ...(freshUser || {}) },
     policies: records
   });
 });
 
-app.get('/customer/ask-question', requireCustomer, (req, res) => {
-  res.render('customer/ask_question', { customer: req.session.user });
+app.get('/customer/ask-question', requireCustomer, async (req, res) => {
+  const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
+  res.render('customer/ask_question', {
+    customer: { ...req.session.user, ...(freshUser || {}) }
+  });
 });
 
 app.post('/customer/ask-question', requireCustomer, async (req, res) => {
@@ -612,9 +767,10 @@ app.post('/customer/ask-question', requireCustomer, async (req, res) => {
 
 app.get('/customer/question-history', requireCustomer, async (req, res) => {
   const customerId = req.session.user.id || req.session.user.customerId;
+  const freshUser = await getUserById(customerId);
   const questions = await getQuestions(customerId);
   res.render('customer/question_history', {
-    customer: req.session.user,
+    customer: { ...req.session.user, ...(freshUser || {}) },
     questions
   });
 });

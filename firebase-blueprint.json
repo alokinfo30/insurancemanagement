@@ -12,7 +12,7 @@
         "last_name": { "type": "string", "maxLength": 64 },
         "mobile": { "type": "string", "maxLength": 20 },
         "address": { "type": "string", "maxLength": 256 },
-        "profile_pic": { "type": "string", "maxLength": 512 },
+        "profile_pic": { "type": "string", "maxLength": 500000 },
         "createdAt": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
@@ -29,7 +29,7 @@
     },
     "Category": {
       "title": "Category",
-      "description": "Insurance plan category",
+      "description": "Insurance plan category created by admin",
       "type": "object",
       "properties": {
         "category_name": { "type": "string", "maxLength": 100 },
@@ -50,7 +50,7 @@
         "premium": { "type": "number" },
         "tenure": { "type": "number" },
         "creation_date": { "type": "string", "maxLength": 30 },
-        "description": { "type": "string", "maxLength": 1000 },
+        "description": { "type": "string", "maxLength": 2000 },
         "createdAt": { "type": "string" }
       },
       "required": ["policy_name", "category_id", "sum_assurance", "premium", "tenure"]
@@ -71,9 +71,30 @@
       },
       "required": ["customer_id", "policy_id", "status"]
     },
+    "Claim": {
+      "title": "Claim",
+      "description": "Customer insurance claim submission and status tracking",
+      "type": "object",
+      "properties": {
+        "customer_id": { "type": "string", "maxLength": 128 },
+        "customer_name": { "type": "string", "maxLength": 128 },
+        "customer_email": { "type": "string", "format": "email", "maxLength": 128 },
+        "policy_id": { "type": "string", "maxLength": 64 },
+        "policy_name": { "type": "string", "maxLength": 120 },
+        "claim_amount": { "type": "number" },
+        "incident_date": { "type": "string", "maxLength": 30 },
+        "reason": { "type": "string", "maxLength": 256 },
+        "supporting_details": { "type": "string", "maxLength": 5000 },
+        "status": { "type": "string", "enum": ["Pending", "Under Review", "Approved", "Rejected"] },
+        "admin_remarks": { "type": "string", "maxLength": 2000 },
+        "settlement_amount": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["customer_id", "policy_id", "claim_amount", "status"]
+    },
     "Question": {
       "title": "Question",
-      "description": "Customer inquiry or support question",
+      "description": "Customer support question and admin response",
       "type": "object",
       "properties": {
         "customer_id": { "type": "string", "maxLength": 128 },
@@ -89,7 +110,7 @@
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
-      "description": "Registered user accounts and profiles"
+      "description": "Registered customer and admin accounts"
     },
     "/admins/{adminId}": {
       "schema": { "$ref": "#/entities/Admin" },
@@ -97,7 +118,7 @@
     },
     "/categories/{categoryId}": {
       "schema": { "$ref": "#/entities/Category" },
-      "description": "Available insurance policy categories"
+      "description": "Insurance policy categories created by admin"
     },
     "/policies/{policyId}": {
       "schema": { "$ref": "#/entities/Policy" },
@@ -106,6 +127,10 @@
     "/policy_records/{recordId}": {
       "schema": { "$ref": "#/entities/PolicyRecord" },
       "description": "Customer policy applications"
+    },
+    "/claims/{claimId}": {
+      "schema": { "$ref": "#/entities/Claim" },
+      "description": "Customer claims submitted and tracked through Firestore"
     },
     "/questions/{questionId}": {
       "schema": { "$ref": "#/entities/Question" },

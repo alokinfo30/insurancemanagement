@@ -57,6 +57,9 @@
       padding: 0 10px;
     }
   </style>
+  <script>
+    window.FIREBASE_CONFIG = <%- JSON.stringify(typeof firebaseConfig !== 'undefined' ? firebaseConfig : {}) %>;
+  </script>
 </head>
 <body>
   <%- include('../partials/navbar') %>
@@ -70,7 +73,7 @@
     <% } %>
 
     <!-- Instant Google Sign-Up via Firebase Auth -->
-    <button type="button" id="googleSignInBtn" data-role="CUSTOMER" class="btn-firebase-google">
+    <button type="button" id="googleSignInBtn" data-role="CUSTOMER" onclick="if(window.handleGoogleSignIn){ window.handleGoogleSignIn('CUSTOMER'); } else { alert('Firebase initializing, please try again in 1 second'); }" class="btn-firebase-google">
       <svg width="20" height="20" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
         <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
@@ -118,7 +121,7 @@
     <div class="form-row">
       <div class="form-group col-md-12">
         <label for="profile_pic">Profile Picture URL (optional)</label>
-        <input type="text" name="profile_pic" class="form-control" placeholder="/static/profile_pic/Customer/lazy.PNG" value="/static/profile_pic/Customer/lazy.PNG">
+        <input type="text" name="profile_pic" class="form-control" placeholder="/static/image/avatar-default.svg" value="/static/image/avatar-default.svg">
       </div>
     </div>
 
